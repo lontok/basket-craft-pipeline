@@ -23,3 +23,28 @@ def get_postgres_engine():
         f"/{os.environ['POSTGRES_DB']}"
     )
     return create_engine(url)
+
+
+def get_rds_engine():
+    url = (
+        f"postgresql+psycopg2://{os.environ['RDS_USER']}:{os.environ['RDS_PASSWORD']}"
+        f"@{os.environ['RDS_HOST']}:{os.environ['RDS_PORT']}"
+        f"/{os.environ['RDS_DATABASE']}"
+    )
+    return create_engine(url)
+
+
+def get_snowflake_connection():
+    import snowflake.connector
+
+    kwargs = {
+        "account": os.environ["SNOWFLAKE_ACCOUNT"],
+        "user": os.environ["SNOWFLAKE_USER"],
+        "password": os.environ["SNOWFLAKE_PASSWORD"],
+        "warehouse": os.environ["SNOWFLAKE_WAREHOUSE"],
+        "database": os.environ["SNOWFLAKE_DATABASE"],
+        "schema": os.environ.get("SNOWFLAKE_SCHEMA", "RAW"),
+    }
+    if role := os.environ.get("SNOWFLAKE_ROLE"):
+        kwargs["role"] = role
+    return snowflake.connector.connect(**kwargs)
