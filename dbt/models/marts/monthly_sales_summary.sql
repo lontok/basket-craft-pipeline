@@ -1,3 +1,17 @@
+-- DEPRECATED 2026-04-26: superseded by fct_order_items + dim_product + dim_date.
+-- Maya is validating existing dashboards against the new star schema.
+-- Once she confirms numbers match, this file will be removed in a follow-up PR.
+-- New equivalent query:
+--   SELECT
+--       date_trunc('month', f.date_key)::date AS month,
+--       p.product_name,
+--       SUM(f.price_usd) AS total_revenue,
+--       COUNT(DISTINCT f.order_id) AS order_count
+--   FROM ANALYTICS.fct_order_items f
+--   JOIN ANALYTICS.dim_product p USING (product_id)
+--   GROUP BY 1, 2
+--   ORDER BY 1, 2;
+
 {{
     config(
         materialized='table'
