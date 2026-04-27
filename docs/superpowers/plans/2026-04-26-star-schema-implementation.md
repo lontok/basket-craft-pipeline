@@ -509,7 +509,8 @@ Add to the `models:` list in `dbt/models/marts/_marts.yml`:
         description: True when refund_amount_usd > 0.
         data_tests:
           - accepted_values:
-              values: [true, false]
+              arguments:
+                values: [true, false]
 ```
 
 - [ ] **Step 3: Build the model and run its tests**

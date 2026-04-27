@@ -13,7 +13,7 @@ select
     month(full_date) as month,
     monthname(full_date) as month_name,
     day(full_date) as day_of_month,
-    dayofweek(full_date) as day_of_week,
+    dayofweekiso(full_date) as day_of_week,
     dayname(full_date) as day_name,
-    iff(dayofweek(full_date) in (0, 6), true, false) as is_weekend
+    iff(dayofweekiso(full_date) in (6, 7), true, false) as is_weekend
 from date_spine
