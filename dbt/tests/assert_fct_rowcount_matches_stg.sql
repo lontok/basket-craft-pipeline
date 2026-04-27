@@ -1,6 +1,7 @@
 -- The fact's INNER JOIN to stg_orders could silently drop rows if any line item
 -- references a missing order. Cross-join the row counts; this returns rows
--- only when fct and stg disagree.
+-- only when fct and stg disagree. On failure, the single returned row shows
+-- (fct_n, stg_n) so the magnitude of the drop is visible at a glance.
 with fct_count as (
     select count(*) as n from {{ ref('fct_order_items') }}
 ),
