@@ -53,3 +53,18 @@ models:
           - accepted_values:
               arguments:
                 values: [true, false]
+
+  - name: dim_product
+    description: Product dimension. SCD Type 1 — current attributes only, no history.
+    columns:
+      - name: product_id
+        description: Primary key.
+        data_tests:
+          - unique
+          - not_null
+      - name: product_name
+        data_tests:
+          - not_null
+      - name: product_description
+      - name: product_created_at
+        description: Renamed from stg_products.created_at to avoid clashing with the fact's created_at.
