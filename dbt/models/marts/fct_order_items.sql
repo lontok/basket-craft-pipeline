@@ -15,6 +15,9 @@ select
     o.user_id,
 
     -- Foreign keys to dimensions
+    -- date_key uses the line-item timestamp; in the current source it equals
+    -- the order's created_at, but using the line item's own timestamp is
+    -- correct if the source ever supports adding items to an existing order.
     oi.created_at::date as date_key,
     oi.product_id,
     o.primary_product_id,
