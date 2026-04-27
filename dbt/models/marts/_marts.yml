@@ -26,3 +26,30 @@ models:
         description: Raw count of order_items rows.
       - name: loaded_at
         description: Timestamp this row was built by dbt.
+
+  - name: dim_date
+    description: Conformed calendar dimension. Generated from a 30-year spine starting 2010-01-01.
+    columns:
+      - name: date_key
+        description: Primary key. Type DATE.
+        data_tests:
+          - unique
+          - not_null
+      - name: full_date
+        description: Duplicate of date_key for query readability.
+        data_tests:
+          - not_null
+      - name: year
+        data_tests:
+          - not_null
+      - name: quarter
+        data_tests:
+          - not_null
+      - name: month
+        data_tests:
+          - not_null
+      - name: is_weekend
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [true, false]
