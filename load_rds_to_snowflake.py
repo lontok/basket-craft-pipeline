@@ -38,6 +38,7 @@ def copy_all_tables(rds_engine, sf_conn):
             auto_create_table=True,
             overwrite=True,
             quote_identifiers=False,
+            use_logical_type=True,
         )
         if not success:
             raise RuntimeError(f"write_pandas reported failure for table {table}")
