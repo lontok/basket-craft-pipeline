@@ -1,0 +1,28 @@
+version: 2
+
+models:
+  - name: monthly_sales_summary
+    description: Monthly revenue and order counts, one row per (month, product).
+    columns:
+      - name: month
+        description: First day of the calendar month.
+        data_tests:
+          - not_null
+      - name: product_name
+        description: Product name from raw.products.
+        data_tests:
+          - not_null
+      - name: total_revenue
+        description: Sum of order_items.price_usd for the month and product.
+        data_tests:
+          - not_null
+      - name: order_count
+        description: Distinct orders containing this product in the month.
+        data_tests:
+          - not_null
+      - name: avg_order_value
+        description: total_revenue / order_count, rounded to two decimals.
+      - name: total_items_sold
+        description: Raw count of order_items rows.
+      - name: loaded_at
+        description: Timestamp this row was built by dbt.
