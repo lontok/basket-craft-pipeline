@@ -118,13 +118,13 @@ select
     month(full_date) as month,
     monthname(full_date) as month_name,
     day(full_date) as day_of_month,
-    dayofweek(full_date) as day_of_week,
+    dayofweekiso(full_date) as day_of_week,
     dayname(full_date) as day_name,
-    iff(dayofweek(full_date) in (0, 6), true, false) as is_weekend
+    iff(dayofweekiso(full_date) in (6, 7), true, false) as is_weekend
 from date_spine
 ```
 
-Note: Snowflake's `dayofweek()` returns 0=Sunday through 6=Saturday by default.
+Note: `DAYOFWEEKISO()` is used instead of `DAYOFWEEK()` because the latter is sensitive to Snowflake's `WEEK_START` session parameter. ISO returns 1=Monday through 7=Sunday regardless of session settings, so checking `in (6, 7)` for weekend is unambiguous.
 
 - [ ] **Step 2: Add schema tests to `_marts.yml`**
 
