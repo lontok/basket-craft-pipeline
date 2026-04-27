@@ -68,3 +68,65 @@ models:
       - name: product_description
       - name: product_created_at
         description: Renamed from stg_products.created_at to avoid clashing with the fact's created_at.
+
+  - name: fct_order_items
+    description: >
+      Fact at order line-item grain. One row per order_item_id. Joins
+      int_order_items_with_refunds to stg_orders for primary_product_id and user_id.
+    columns:
+      - name: order_item_id
+        description: Primary key (degenerate dimension).
+        data_tests:
+          - unique
+          - not_null
+      - name: order_id
+        description: Degenerate dimension. Group by this to see basket contents.
+        data_tests:
+          - not_null
+      - name: user_id
+        description: Degenerate dimension. Use COUNT DISTINCT for customer counts.
+      - name: date_key
+        description: FK to dim_date.
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('dim_date')
+              field: date_key
+      - name: product_id
+        description: FK to dim_product (line item's product).
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('dim_product')
+              field: product_id
+      - name: primary_product_id
+        description: FK to dim_product (order's headline product, role-playing dim).
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('dim_product')
+              field: product_id
+      - name: price_usd
+        data_tests:
+          - not_null
+      - name: cogs_usd
+        data_tests:
+          - not_null
+      - name: refund_amount_usd
+        data_tests:
+          - not_null
+      - name: is_primary_item
+        data_tests:
+          - not_null
+      - name: gross_profit_usd
+        description: price_usd - cogs_usd.
+      - name: net_revenue_usd
+        description: price_usd - refund_amount_usd.
+      - name: net_profit_usd
+        description: price_usd - cogs_usd - refund_amount_usd.
+      - name: has_refund
+        description: True when refund_amount_usd > 0.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [true, false]
