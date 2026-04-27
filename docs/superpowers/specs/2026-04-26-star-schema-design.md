@@ -68,41 +68,41 @@ erDiagram
     DIM_PRODUCT ||--o{ FCT_ORDER_ITEMS : "primary_product_id (role-playing)"
 
     DIM_DATE {
-        DATE date_key PK
-        DATE full_date
-        INT year
-        INT quarter
-        INT month
-        TEXT month_name
-        INT day_of_month
-        INT day_of_week
-        TEXT day_name
-        BOOLEAN is_weekend
+        date_key DATE PK
+        full_date DATE
+        year INT
+        quarter INT
+        month INT
+        month_name TEXT
+        day_of_month INT
+        day_of_week INT
+        day_name TEXT
+        is_weekend BOOLEAN
     }
 
     DIM_PRODUCT {
-        NUMBER product_id PK
-        TEXT product_name
-        TEXT product_description
-        TIMESTAMP_NTZ product_created_at
+        product_id NUMBER PK
+        product_name TEXT
+        product_description TEXT
+        product_created_at TIMESTAMP_NTZ
     }
 
     FCT_ORDER_ITEMS {
-        NUMBER order_item_id PK
-        NUMBER order_id "degenerate"
-        NUMBER user_id "degenerate"
-        DATE date_key FK
-        NUMBER product_id FK
-        NUMBER primary_product_id FK
-        NUMBER price_usd "atomic"
-        NUMBER cogs_usd "atomic"
-        NUMBER refund_amount_usd "atomic"
-        BOOLEAN is_primary_item "atomic"
-        NUMBER gross_profit_usd "derived"
-        NUMBER net_revenue_usd "derived"
-        NUMBER net_profit_usd "derived"
-        BOOLEAN has_refund "derived"
-        TIMESTAMP_NTZ created_at
+        order_item_id NUMBER PK
+        order_id NUMBER "degenerate"
+        user_id NUMBER "degenerate"
+        date_key DATE FK
+        product_id NUMBER FK
+        primary_product_id NUMBER FK
+        price_usd NUMBER "atomic"
+        cogs_usd NUMBER "atomic"
+        refund_amount_usd NUMBER "atomic"
+        is_primary_item BOOLEAN "atomic"
+        gross_profit_usd NUMBER "derived"
+        net_revenue_usd NUMBER "derived"
+        net_profit_usd NUMBER "derived"
+        has_refund BOOLEAN "derived"
+        created_at TIMESTAMP_NTZ
     }
 ```
 
