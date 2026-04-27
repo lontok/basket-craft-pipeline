@@ -57,6 +57,55 @@ dbt/models/
 
 Going coarser (order header, daily snapshot) would lose information that B and D need.
 
+## ERD
+
+`dim_product` plays two roles: it joins to the fact once for the line item's product and again for the order's headline product. That's the same dim joined twice, which is why both `product_id` and `primary_product_id` appear with arrows pointing at it.
+
+```mermaid
+erDiagram
+    DIM_DATE ||--o{ FCT_ORDER_ITEMS : "date_key"
+    DIM_PRODUCT ||--o{ FCT_ORDER_ITEMS : "product_id (line item)"
+    DIM_PRODUCT ||--o{ FCT_ORDER_ITEMS : "primary_product_id (role-playing)"
+
+    DIM_DATE {
+        DATE date_key PK
+        DATE full_date
+        INT year
+        INT quarter
+        INT month
+        TEXT month_name
+        INT day_of_month
+        INT day_of_week
+        TEXT day_name
+        BOOLEAN is_weekend
+    }
+
+    DIM_PRODUCT {
+        NUMBER product_id PK
+        TEXT product_name
+        TEXT product_description
+        TIMESTAMP_NTZ product_created_at
+    }
+
+    FCT_ORDER_ITEMS {
+        NUMBER order_item_id PK
+        NUMBER order_id "degenerate"
+        NUMBER user_id "degenerate"
+        DATE date_key FK
+        NUMBER product_id FK
+        NUMBER primary_product_id FK
+        NUMBER price_usd "atomic"
+        NUMBER cogs_usd "atomic"
+        NUMBER refund_amount_usd "atomic"
+        BOOLEAN is_primary_item "atomic"
+        NUMBER gross_profit_usd "derived"
+        NUMBER net_revenue_usd "derived"
+        NUMBER net_profit_usd "derived"
+        BOOLEAN has_refund "derived"
+        TIMESTAMP_NTZ created_at
+    }
+```
+
 ## Components
 
 ### dim_product
