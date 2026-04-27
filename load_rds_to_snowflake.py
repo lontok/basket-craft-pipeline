@@ -27,6 +27,7 @@ def copy_all_tables(rds_engine, sf_conn):
     for table in tables:
         logger.info("Extracting %s.%s from RDS", SOURCE_SCHEMA, table)
         df = pd.read_sql_table(table, rds_engine, schema=SOURCE_SCHEMA)
+        df.columns = [c.upper() for c in df.columns]
 
         logger.info("Loading %s.%s into Snowflake (%d rows)", TARGET_SCHEMA, table, len(df))
         success, nchunks, nrows, _ = write_pandas(

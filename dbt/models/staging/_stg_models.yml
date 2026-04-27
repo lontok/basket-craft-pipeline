@@ -1,0 +1,103 @@
+version: 2
+
+models:
+
+  - name: stg_employees
+    description: >
+      One row per internal employee. `salary` cast from FLOAT to NUMERIC for
+      exact arithmetic.
+    columns:
+      - name: employee_id
+        description: Primary key.
+      - name: salary
+        description: Annual salary in the employee's local currency, cast to NUMERIC(12,2).
+
+  - name: stg_order_item_refunds
+    description: One row per refund against an order line item. Monetary columns cast to NUMERIC.
+    columns:
+      - name: order_item_refund_id
+        description: Primary key.
+      - name: order_item_id
+        description: FK to stg_order_items.order_item_id.
+      - name: refund_amount_usd
+        description: Refund amount in USD, cast from FLOAT to NUMERIC(12,2).
+
+  - name: stg_order_items
+    description: >
+      One row per line item within an order. Monetary columns cast to NUMERIC,
+      `is_primary_item` cast from 0/1 to BOOLEAN.
+    columns:
+      - name: order_item_id
+        description: Primary key.
+      - name: order_id
+        description: FK to stg_orders.order_id.
+      - name: product_id
+        description: FK to stg_products.product_id.
+      - name: is_primary_item
+        description: True if this line is the order's headline product.
+      - name: price_usd
+        description: Line item revenue in USD, cast to NUMERIC(12,2). Gross — refunds tracked separately in stg_order_item_refunds.
+      - name: cogs_usd
+        description: Cost of goods sold in USD, cast to NUMERIC(12,2).
+
+  - name: stg_orders
+    description: One row per customer order. Monetary columns cast to NUMERIC.
+    columns:
+      - name: order_id
+        description: Primary key.
+      - name: user_id
+        description: FK to stg_users.user_id.
+      - name: website_session_id
+        description: FK to stg_website_sessions.website_session_id — the session that produced the order.
+      - name: primary_product_id
+        description: FK to stg_products.product_id — the order's headline product.
+      - name: price_usd
+        description: Order total in USD, cast to NUMERIC(12,2).
+      - name: cogs_usd
+        description: Order cost of goods sold in USD, cast to NUMERIC(12,2).
+
+  - name: stg_products
+    description: One row per product. `description` renamed to `product_description` to avoid a generic column name.
+    columns:
+      - name: product_id
+        description: Primary key.
+      - name: product_name
+        description: Human-readable product name.
+      - name: product_description
+        description: Long-form product description (renamed from raw.products.description).
+
+  - name: stg_users
+    description: >
+      One row per registered user. Credential columns (password_salt,
+      password_hash) are dropped at staging — they must not propagate into
+      analytics models. The raw column `shipping_street_ddress` is renamed to
+      `shipping_street_address` to fix an upstream typo.
+    columns:
+      - name: user_id
+        description: Primary key.
+      - name: email
+        description: User email. PII — handle according to policy.
+      - name: shipping_street_address
+        description: Renamed from raw.users.shipping_street_ddress (typo fix).
+
+  - name: stg_website_pageviews
+    description: One row per pageview event.
+    columns:
+      - name: website_pageview_id
+        description: Primary key.
+      - name: website_session_id
+        description: FK to stg_website_sessions.website_session_id.
+
+  - name: stg_website_sessions
+    description: >
+      One row per visitor session. `is_repeat_session` cast from 0/1 to
+      BOOLEAN.
+    columns:
+      - name: website_session_id
+        description: Primary key.
+      - name: user_id
+        description: FK to stg_users.user_id when the visitor is signed in; null for anonymous sessions.
+      - name: is_repeat_session
+        description: True if the visitor had a prior session, false otherwise.
+      - name: http_referer
+        description: HTTP referer header (misspelling preserved from the HTTP spec).

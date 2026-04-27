@@ -1,0 +1,179 @@
+version: 2
+
+sources:
+  - name: raw
+    database: "{{ env_var('SNOWFLAKE_DATABASE', 'BASKET_CRAFT') }}"
+    schema: RAW
+    description: >
+      Raw tables loaded from MySQL via load_rds_to_snowflake.py. Column types
+      are pandas-inferred during load, not explicitly declared. Notably,
+      monetary columns land as FLOAT rather than NUMERIC, so currency
+      arithmetic can drift — cast to NUMERIC in staging if precision matters.
+    tables:
+
+      - name: employees
+        description: Internal employee directory. Not referenced by any customer-facing pipelines.
+        columns:
+          - name: employee_id
+            description: Primary key.
+            data_tests:
+              - unique
+              - not_null
+          - name: first_name
+          - name: last_name
+          - name: department
+          - name: salary
+          - name: email
+
+      - name: order_item_refunds
+        description: Refunds issued against individual order line items.
+        columns:
+          - name: order_item_refund_id
+            description: Primary key.
+            data_tests:
+              - unique
+              - not_null
+          - name: order_item_id
+            description: FK to raw.order_items.order_item_id.
+            data_tests:
+              - not_null
+          - name: refund_amount_usd
+            description: Refund amount in USD (FLOAT).
+          - name: created_at
+            description: Timestamp the refund was issued.
+
+      - name: order_items
+        description: One row per line item within an order.
+        columns:
+          - name: order_item_id
+            description: Primary key.
+            data_tests:
+              - unique
+              - not_null
+          - name: order_id
+            description: FK to raw.orders.order_id.
+            data_tests:
+              - not_null
+          - name: product_id
+            description: FK to raw.products.product_id.
+            data_tests:
+              - not_null
+          - name: is_primary_item
+            description: 1 if this line is the order's headline product, 0 otherwise.
+          - name: price_usd
+            description: Line item revenue in USD, gross (refunds not netted out).
+          - name: cogs_usd
+            description: Cost of goods sold for the line item.
+          - name: created_at
+            description: Timestamp the line item was recorded.
+
+      - name: orders
+        description: One row per customer order.
+        columns:
+          - name: order_id
+            description: Primary key.
+            data_tests:
+              - unique
+              - not_null
+          - name: user_id
+            description: FK to raw.users.user_id.
+          - name: website_session_id
+            description: FK to raw.website_sessions.website_session_id — the session that produced the order.
+          - name: primary_product_id
+            description: FK to raw.products.product_id — the order's headline product.
+          - name: items_purchased
+            description: Count of line items in the order.
+          - name: price_usd
+            description: Order total in USD, gross.
+          - name: cogs_usd
+            description: Cost of goods sold for the order.
+          - name: created_at
+            description: Order placement timestamp.
+
+      - name: products
+        description: Product catalog. Each product doubles as its own category (no separate category table).
+        columns:
+          - name: product_id
+            description: Primary key.
+            data_tests:
+              - unique
+              - not_null
+          - name: product_name
+            description: Human-readable product name.
+          - name: description
+            description: Long-form product description.
+          - name: created_at
+            description: Timestamp the product was added to the catalog.
+
+      - name: users
+        description: >
+          Registered customer accounts. Contains PII (names, addresses) and
+          credential material (password_salt, password_hash). Do not propagate
+          credential columns into downstream analytics models.
+        columns:
+          - name: user_id
+            description: Primary key.
+            data_tests:
+              - unique
+              - not_null
+          - name: first_name
+          - name: last_name
+          - name: email
+          - name: password_salt
+            description: Credential material. PII — exclude from analytics models.
+          - name: password_hash
+            description: Credential material. PII — exclude from analytics models.
+          - name: billing_street_address
+          - name: billing_city
+          - name: billing_state
+          - name: billing_postal_code
+          - name: billing_country
+          - name: shipping_street_ddress
+            description: >
+              Shipping street address. Column name has a typo ("ddress")
+              upstream — preserve as-is in source, rename to
+              shipping_street_address at the staging layer.
+          - name: shipping_city
+          - name: shipping_state
+          - name: shipping_postal_code
+          - name: shipping_country
+          - name: created_at
+            description: Account creation timestamp.
+
+      - name: website_pageviews
+        description: One row per pageview event.
+        columns:
+          - name: website_pageview_id
+            description: Primary key.
+            data_tests:
+              - unique
+              - not_null
+          - name: website_session_id
+            description: FK to raw.website_sessions.website_session_id.
+            data_tests:
+              - not_null
+          - name: pageview_url
+            description: URL path that was viewed.
+          - name: created_at
+            description: Pageview timestamp.
+
+      - name: website_sessions
+        description: One row per visitor session.
+        columns:
+          - name: website_session_id
+            description: Primary key.
+            data_tests:
+              - unique
+              - not_null
+          - name: user_id
+            description: FK to raw.users.user_id when the visitor is signed in; may be null for anonymous sessions.
+          - name: is_repeat_session
+            description: 1 if the visitor had a prior session, 0 otherwise.
+          - name: utm_source
+          - name: utm_campaign
+          - name: utm_content
+          - name: device_type
+          - name: http_referer
+            description: HTTP referer header (original misspelling preserved from the HTTP spec).
+          - name: created_at
+            description: Session start timestamp.
